@@ -21,7 +21,10 @@ class UrlService {
         if (!this.memoryStore) {
             this.memoryStore = new InMemoryStore();
             this.useMemoryStore = true;
-            logger.warn('Initialized in-memory store as MongoDB fallback');
+            logger.warn('Initialized in-memory store as MongoDB fallback', { 
+                package: 'repository', 
+                stack: 'backend' 
+            });
         }
     }
 
@@ -33,12 +36,20 @@ class UrlService {
         const { url: originalUrl, validity = 30, shortcode: customShortcode } = urlData;
 
         if (!isValidUrl(originalUrl)) {
-            logger.warn('Invalid URL provided', { originalUrl });
+            logger.warn('Invalid URL provided', { 
+                originalUrl, 
+                package: 'service', 
+                stack: 'backend' 
+            });
             throw new Error('Invalid URL format');
         }
 
         if (validity < 1 || validity > 525600) {
-            logger.warn('Invalid validity period', { validity });
+            logger.warn('Invalid validity period', { 
+                validity, 
+                package: 'service', 
+                stack: 'backend' 
+            });
             throw new Error('Validity must be between 1 and 525600 minutes');
         }
 
@@ -85,7 +96,9 @@ class UrlService {
             shortcode,
             originalUrl,
             expiresAt,
-            validity
+            validity,
+            package: 'service',
+            stack: 'backend'
         });
 
         return savedUrl;
@@ -96,7 +109,7 @@ class UrlService {
             throw new Error('Unable to generate unique shortcode');
         }
 
-        const shortcode = generateShortcode(6 + attempts); // Increase length with attempts
+        const shortcode = generateShortcode(6 + attempts);
         const existingUrl = await this.findUrl({ shortcode });
 
         if (existingUrl) {
